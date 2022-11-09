@@ -1,0 +1,62 @@
+name: BuildImage
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y%m%d')"
+
+      - name: Docker Login
+        uses: docker/login-action@v1.9.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v2.4.0
+        with:
+          # Build's context is the set of files located in the specified PATH or URL
+          #context: # optional
+          # Path to the Dockerfile
+          #file: # optional
+          # List of metadata for an image
+          #labels: # optional
+          # Load is a shorthand for --output=type=docker
+          #load: # optional, default is false
+          # Set the networking mode for the RUN instructions during build
+          #network: # optional
+          # Do not use cache when building the image
+          no-cache: true # optional, default is false
+          # List of output destinations (format: type=local,dest=path)
+          #outputs: # optional
+          # List of target platforms for build
+          #platforms: # optional
+          # Push is a shorthand for --output=type=registry
+          push: true # optional, default is false
+          # List of tags
+          tags: rocetch/node-kerberos:14.16.1-alpine-${{ steps.date.outputs.date }}
+          # Sets the target stage to build
+          #target: # optional
+          # GitHub Token used to authenticate against a repository for Git context
+          #github-token: # optional, default is ${{ github.token }}
